@@ -8,7 +8,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+#ifndef DESKTOP
+    dbg_file = fopen("/home/nemo/qmems.dbg", "w");
+    fprintf(dbg_file, "Open dbg session...\n");
+    fflush(dbg_file);
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -23,12 +27,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     if (event->key() == Qt::Key_Escape)
         QApplication::quit();
 #else
-    static FILE *file = nullptr;
-
-    if(file == nullptr) {
-        file = fopen("/home/nemo/qmems.dbg", "w");
-    }
-    fprintf(file, "Key press: %X\n", event->key());
-    fflush(file);
+    fprintf(dbg_file, "Key press: %X\n", event->key());
+    fflush(dbg_file);
 #endif
 }
