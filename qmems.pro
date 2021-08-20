@@ -41,6 +41,7 @@ CONFIG(buildroot) {
     QMAKE_CXXFLAGS += -std=c++11
 } else {
 # Default rules for deployment.
+    DEFINES += DESKTOP
     qnx: target.path = /tmp/$${TARGET}/bin
     else: unix:!android: target.path = /opt/$${TARGET}/bin
     !isEmpty(target.path): INSTALLS += target
