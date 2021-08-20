@@ -38,6 +38,7 @@ CONFIG(buildroot) {
     CONFIG += link_pkgconfig
     target.path=/usr/bin
     INSTALLS += target
+    QMAKE_CXXFLAGS += -std=c++11
 } else {
 # Default rules for deployment.
     qnx: target.path = /tmp/$${TARGET}/bin
