@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -17,8 +18,18 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QTimer timer;
+    int file_count;
+    unsigned long long count;
+    QString file_name;
 
+    bool start;
     void keyPressEvent(QKeyEvent *event);
+    void updateTime(unsigned long long time_ms);
+
+private slots:
+    void onClick();
+    void onTimer();
 };
 
 #endif // MAINWINDOW_H
