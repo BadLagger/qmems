@@ -2,12 +2,8 @@
 #include "ui_mainwindow.h"
 #include <QKeyEvent>
 #include <QDebug>
-#include <QThread>
 
-struct Sleeper : private QThread
-{
-    static void msleep(unsigned long msecs) { QThread::msleep(msecs); } 
-};
+const QString MainWindow::ChargeFilePath = "/sys/devices/platform/3802c00.i2c/i2c-0/0-0055/power_supply/bq27531-0/capacity";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -19,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(onClick()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+    connect(&upd_charge_lvl_timer, SIGNAL(timeout()), this, SLOT(updateChargeLevel()));
+    upd_charge_lvl_timer.start(1000);
 }
 
 MainWindow::~MainWindow()
@@ -63,7 +61,7 @@ void MainWindow::onClick()
         QByteArray cmd_array = cmd.toLocal8Bit();
         const char *c_str_cmd = cmd_array.data();
         system(c_str_cmd);
-        Sleeper::msleep(500);
+        Delay::msleep(500);
         updateSizeInfo();
 #endif
         timer.stop();
@@ -90,6 +88,23 @@ void MainWindow::updateTime(unsigned long long time_ms)
     updateSizeInfo();
 }
 
+void MainWindow::updateChargeLevel()
+{
+#ifndef DESKTOP
+    QFile charge_file(ChargeFilePath);
+    if (charge_file.open(QIODevice::ReadOnly)) {
+        QByteArray data = charge_file.readAll();
+        data = data.trimmed();
+        if ((data.toInt() > 0) && (data.toInt() <= 100))
+            ui->ChargeLvlLbl->setText(QString::number(data.toInt()) + QString(" %"));
+        else
+            ui->ChargeLvlLbl->setText(QString::fromUtf8("нз=") + QString::number(data.toInt()));
+    } else {
+        ui->ChargeLvlLbl->setText(QString::fromUtf8("недоступно"));
+    }
+#endif
+}
+
 void MainWindow::updateSizeInfo(void)
 {
 #ifndef DESKTOP
@@ -99,7 +114,7 @@ void MainWindow::updateSizeInfo(void)
         unsigned long long file_size = log_file.size();
         log_file.close();
 
-        QString file_size_str = QString::fromUtf8("недоступно: ") + QString::number(file_size);
+        QString file_size_str = QString::fromUtf8("нз=") + QString::number(file_size);
         if (file_size < 1024) {
             file_size_str = QString::number(file_size) + QString::fromUtf8(" Байт");
             //file_size_str = QString::fromUtf8("Байт");
@@ -113,7 +128,8 @@ void MainWindow::updateSizeInfo(void)
                     file_size_str = QString::number(double(file_size/1048576), 'f', 2) + QString::fromUtf8(" МБайт");
                 }
         ui->FileSizeLbl->setText(file_size_str);
-        
+    } else {
+        ui->FileSizeLbl->setText(QString::fromUtf8("недоступно"));
     }
 #endif
 }

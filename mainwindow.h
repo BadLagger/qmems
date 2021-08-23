@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QThread>
 
 namespace Ui {
 class MainWindow;
@@ -17,10 +18,16 @@ public:
     ~MainWindow();
 
 private:
+    struct Delay : private QThread{
+        static void msleep(unsigned long msecs) { QThread::msleep(msecs); }
+    };
+
+    static const QString ChargeFilePath;
     Ui::MainWindow *ui;
     QTimer timer;
-    int file_count;
+    QTimer upd_charge_lvl_timer;
     unsigned long long count;
+    int file_count;
     QString file_name;
 
     bool start;
@@ -31,6 +38,7 @@ private:
 private slots:
     void onClick();
     void onTimer();
+    void updateChargeLevel();
 };
 
 #endif // MAINWINDOW_H
