@@ -26,6 +26,7 @@ private:
     bool start;
     void keyPressEvent(QKeyEvent *event);
     void updateTime(unsigned long long time_ms);
+    void updateSizeInfo();
 
 private slots:
     void onClick();

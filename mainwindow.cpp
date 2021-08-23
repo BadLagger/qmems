@@ -2,6 +2,12 @@
 #include "ui_mainwindow.h"
 #include <QKeyEvent>
 #include <QDebug>
+#include <QThread>
+
+struct Sleeper : private QThread
+{
+    static void msleep(unsigned long msecs) { QThread::msleep(msecs); } 
+};
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -53,9 +59,12 @@ void MainWindow::onClick()
         ui->pushButton->setText(QString::fromUtf8("СТАРТ"));
 #ifndef DESKTOP
         QString cmd = "dbus-send --session --print-reply --dest=sn.ornap.nvsd /navsensor sn.ornap.nvsd.NavSensor.Compass.LogControl string:'off' string:'" + file_name + "'";
+
         QByteArray cmd_array = cmd.toLocal8Bit();
         const char *c_str_cmd = cmd_array.data();
         system(c_str_cmd);
+        Sleeper::msleep(500);
+        updateSizeInfo();
 #endif
         timer.stop();
         start = false;
@@ -78,12 +87,33 @@ void MainWindow::updateTime(unsigned long long time_ms)
 
     sprintf(str, "%02d:%02d:%02d:%03d", hour, min, sec, ms);
     ui->TimerLbl->setText(str);
+    updateSizeInfo();
+}
+
+void MainWindow::updateSizeInfo(void)
+{
 #ifndef DESKTOP
     QString full_file_path = "/mnt/mmc0/" + file_name;
     QFile log_file(full_file_path);
     if(log_file.open(QIODevice::ReadOnly)) {
-        QString file_size_str = QString::number(log_file.size()) + QString::fromUtf8(" Байт");
+        unsigned long long file_size = log_file.size();
         log_file.close();
+
+        QString file_size_str = QString::fromUtf8("недоступно: ") + QString::number(file_size);
+        if (file_size < 1024) {
+            file_size_str = QString::number(file_size) + QString::fromUtf8(" Байт");
+            //file_size_str = QString::fromUtf8("Байт");
+        } else 
+            if (file_size < 1048576) {
+                //QString file_size_str = QString::fromUtf8("Кбайт");
+                file_size_str = QString::number(double(file_size/1024), 'f', 2) + QString::fromUtf8(" КБайт");
+            } else
+                if (file_size < 1073741824) {
+                    //QString file_size_str = QString::fromUtf8("Мбайт");
+                    file_size_str = QString::number(double(file_size/1048576), 'f', 2) + QString::fromUtf8(" МБайт");
+                }
+        ui->FileSizeLbl->setText(file_size_str);
+        
     }
 #endif
 }
