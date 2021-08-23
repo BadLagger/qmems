@@ -34,8 +34,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 void MainWindow::onClick()
 {
     if(!start){
-        ui->RecLbl->setText("ЗАПИСЬ ИДЁТ");
-        ui->pushButton->setText("СТОП");
+        ui->RecLbl->setText(QString::fromUtf8("ЗАПИСЬ ИДЁТ"));
+        ui->pushButton->setText(QString::fromUtf8("СТОП"));
         count = 0;
         ui->TimerLbl->setText("00:00:00:000");
         file_name = "mems_" + QString::number(file_count++) + ".log";
@@ -49,8 +49,8 @@ void MainWindow::onClick()
         timer.start(10);
         start = true;
     } else {
-        ui->RecLbl->setText("ЗАПИСЬ НЕ ИДЁТ");
-        ui->pushButton->setText("СТАРТ");
+        ui->RecLbl->setText(QString::fromUtf8("ЗАПИСЬ НЕ ИДЁТ"));
+        ui->pushButton->setText(QString::fromUtf8("СТАРТ"));
 #ifndef DESKTOP
         QString cmd = "dbus-send --session --print-reply --dest=sn.ornap.nvsd /navsensor sn.ornap.nvsd.NavSensor.Compass.LogControl string:'off' string:'" + file_name + "'";
         QByteArray cmd_array = cmd.toLocal8Bit();
@@ -81,6 +81,9 @@ void MainWindow::updateTime(unsigned long long time_ms)
 #ifndef DESKTOP
     QString full_file_path = "/mnt/mmc0/" + file_name;
     QFile log_file(full_file_path);
-    QString file_size_str = QString::number(log_file.size()) + " Байт";
+    if(log_file.open(QIODevice::ReadOnly)) {
+        QString file_size_str = QString::number(log_file.size()) + QString::fromUtf8(" Байт");
+        log_file.close();
+    }
 #endif
 }
