@@ -111,7 +111,7 @@ void MainWindow::updateSizeInfo(void)
     QString full_file_path = "/mnt/mmc0/" + file_name;
     QFile log_file(full_file_path);
     if(log_file.open(QIODevice::ReadOnly)) {
-        unsigned long long file_size = log_file.size();
+        quint64 file_size = log_file.size();
         log_file.close();
 
         QString file_size_str = QString::fromUtf8("нз=") + QString::number(file_size);
@@ -120,7 +120,6 @@ void MainWindow::updateSizeInfo(void)
         } else 
             if (file_size < 1048576) {
                 file_size_str = QString::number(file_size/1024., 'f', 2) + QString::fromUtf8(" Кбайт");
-            }
             } else
                 if (file_size < 1073741824) {
                     file_size_str = QString::number(file_size/1048576., 'f', 2) + QString::fromUtf8(" Мбайт");
