@@ -3,7 +3,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 
-const QString MainWindow::ChargeFilePath = "/sys/devices/platform/3802c00.i2c/i2c-0/0-0055/power_supply/bq27531-0/capacity";
+const QString MainWindow::ChargeFilePath = "/sys/devices/platform/3802c000.i2c/i2c-0/0-0055/power_supply/bq27531-0/capacity";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -81,7 +81,7 @@ void MainWindow::updateTime(unsigned long long time_ms)
     int ms   = time_ms % 1000;
     int sec  = (unsigned long long)(time_ms / 1000) % 60;
     int min  = (unsigned long long)(time_ms / 60000) % 60;
-    int hour = (unsigned long long)(time_ms / 3600000) % 24;
+    int hour = (unsigned long long)(time_ms / 3600000);
 
     sprintf(str, "%02d:%02d:%02d:%03d", hour, min, sec, ms);
     ui->TimerLbl->setText(str);
@@ -116,17 +116,18 @@ void MainWindow::updateSizeInfo(void)
 
         QString file_size_str = QString::fromUtf8("нз=") + QString::number(file_size);
         if (file_size < 1024) {
-            file_size_str = QString::number(file_size) + QString::fromUtf8(" Байт");
-            //file_size_str = QString::fromUtf8("Байт");
+            file_size_str = QString::number(file_size) + QString::fromUtf8(" байт");
         } else 
             if (file_size < 1048576) {
-                //QString file_size_str = QString::fromUtf8("Кбайт");
-                file_size_str = QString::number(double(file_size/1024), 'f', 2) + QString::fromUtf8(" КБайт");
+                file_size_str = QString::number(file_size/1024., 'f', 2) + QString::fromUtf8(" Кбайт");
+            }
             } else
                 if (file_size < 1073741824) {
-                    //QString file_size_str = QString::fromUtf8("Мбайт");
-                    file_size_str = QString::number(double(file_size/1048576), 'f', 2) + QString::fromUtf8(" МБайт");
-                }
+                    file_size_str = QString::number(file_size/1048576., 'f', 2) + QString::fromUtf8(" Мбайт");
+                } else
+                    if (file_size < 1099511627776) {
+                      file_size_str = QString::number(file_size/1073741824., 'f', 2) + QString::fromUtf8(" Гбайт");  
+                    }
         ui->FileSizeLbl->setText(file_size_str);
     } else {
         ui->FileSizeLbl->setText(QString::fromUtf8("недоступно"));
