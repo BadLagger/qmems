@@ -10,12 +10,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     count(0),
     file_count(1),
-    start(false)
+    start(false),
+    key_press(false)
 {
     ui->setupUi(this);
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(onClick()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     connect(&upd_charge_lvl_timer, SIGNAL(timeout()), this, SLOT(updateChargeLevel()));
+    connect(&key_timer, SIGNAL(timeout()), this, SLOT(onKeyTimeout()));
     upd_charge_lvl_timer.start(1000);
 }
 
@@ -26,13 +28,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == 16777220) {
-        ui->pushButton->animateClick();
-    }
+    if(!key_press) {
+        if (event->key() == 16777220) {
+            ui->pushButton->animateClick();
+        }
 #ifdef DESKTOP
-    else if (event->key() == Qt::Key_Escape)
-        QApplication::quit();
+        else if (event->key() == Qt::Key_Escape)
+            QApplication::quit();
 #endif
+        key_press = true;
+        key_timer.start(400);
+    }
 }
 
 void MainWindow::onClick()
@@ -79,13 +85,19 @@ void MainWindow::updateTime(unsigned long long time_ms)
 {
     char str[13] = {0};
     int ms   = time_ms % 1000;
-    int sec  = (unsigned long long)(time_ms / 1000) % 60;
-    int min  = (unsigned long long)(time_ms / 60000) % 60;
-    int hour = (unsigned long long)(time_ms / 3600000);
+    int sec  = (time_ms / 1000) % 60;
+    int min  = (time_ms / 60000) % 60;
+    int hour = int(time_ms / 3600000);
 
     sprintf(str, "%02d:%02d:%02d:%03d", hour, min, sec, ms);
     ui->TimerLbl->setText(str);
     updateSizeInfo();
+}
+
+void MainWindow::onKeyTimeout()
+{
+    key_timer.stop();
+    key_press = false;
 }
 
 void MainWindow::updateChargeLevel()

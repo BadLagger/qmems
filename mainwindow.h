@@ -26,11 +26,13 @@ private:
     Ui::MainWindow *ui;
     QTimer timer;
     QTimer upd_charge_lvl_timer;
+    QTimer key_timer;
     unsigned long long count;
     int file_count;
     QString file_name;
-
     bool start;
+    bool key_press;
+
     void keyPressEvent(QKeyEvent *event);
     void updateTime(unsigned long long time_ms);
     void updateSizeInfo();
@@ -38,6 +40,7 @@ private:
 private slots:
     void onClick();
     void onTimer();
+    void onKeyTimeout();
     void updateChargeLevel();
 };
 
