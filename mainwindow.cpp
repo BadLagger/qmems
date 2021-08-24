@@ -2,8 +2,15 @@
 #include "ui_mainwindow.h"
 #include <QKeyEvent>
 #include <QDebug>
+#include <QDir>
+#include <QRegExp>
 
 const QString MainWindow::ChargeFilePath = "/sys/devices/platform/3802c000.i2c/i2c-0/0-0055/power_supply/bq27531-0/capacity";
+#ifdef DESKTOP
+const QString MainWindow::LogDir = "D:\\";
+#else
+const QString MainWindow::LogDir = "/mnt/mmc0/";
+#endif
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,6 +27,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&key_timer, SIGNAL(timeout()), this, SLOT(onKeyTimeout()));
     key_timer.setInterval(1000);
     upd_charge_lvl_timer.start(1000);
+    QDir logs_list(LogDir);
+    QStringList logs = logs_list.entryList(QStringList() << "*.log", QDir::Files);
+    QRegExp rx("mems_\\d+.log");
+    QRegExp num_rx("(\\d+)");
+    foreach(QString log_name, logs) {
+        if(rx.exactMatch(log_name)) {
+            num_rx.indexIn(log_name);
+            int cur_num = num_rx.cap(1).toInt();
+            if( cur_num >= file_count)
+                file_count = cur_num + 1;
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -51,7 +70,17 @@ void MainWindow::onClick()
         ui->TimerLbl->setText("00:00:00:000");
         file_name = "mems_" + QString::number(file_count++) + ".log";
         ui->FileNameLbl->setText(file_name);
-#ifndef DESKTOP
+#ifdef DESKTOP
+        QString full_path = "D:\\" + file_name;
+        qDebug() << "File: " << full_path;
+        QFile file(full_path);
+        if (file.open(QIODevice::WriteOnly)){
+            qDebug() << "create file OK";
+            file.close();
+        } else {
+            qDebug() << "create file ERR";
+        }
+#else
         QString cmd = "dbus-send --session --print-reply --dest=sn.ornap.nvsd /navsensor sn.ornap.nvsd.NavSensor.Compass.LogControl string:'on' string:'" + file_name + "'";
         QByteArray cmd_array = cmd.toLocal8Bit();
         const char *c_str_cmd = cmd_array.data();

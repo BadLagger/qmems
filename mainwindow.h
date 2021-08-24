@@ -23,6 +23,7 @@ private:
     };
 
     static const QString ChargeFilePath;
+    static const QString LogDir;
     Ui::MainWindow *ui;
     QTimer timer;
     QTimer upd_charge_lvl_timer;
