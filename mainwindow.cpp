@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     connect(&upd_charge_lvl_timer, SIGNAL(timeout()), this, SLOT(updateChargeLevel()));
     connect(&key_timer, SIGNAL(timeout()), this, SLOT(onKeyTimeout()));
+    key_timer.setInterval(1000);
     upd_charge_lvl_timer.start(1000);
 }
 
@@ -31,13 +32,13 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     if(!key_press) {
         if (event->key() == 16777220) {
             ui->pushButton->animateClick();
+            key_press = true;
+            key_timer.start();
         }
 #ifdef DESKTOP
         else if (event->key() == Qt::Key_Escape)
             QApplication::quit();
 #endif
-        key_press = true;
-        key_timer.start(400);
     }
 }
 
@@ -96,6 +97,7 @@ void MainWindow::updateTime(unsigned long long time_ms)
 
 void MainWindow::onKeyTimeout()
 {
+    Delay::msleep(300);
     key_timer.stop();
     key_press = false;
 }
