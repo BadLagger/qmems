@@ -120,7 +120,7 @@
         </font>
        </property>
        <property name="text">
-        <string>СТАРТ</string>
+        <string>СТАРТ ↵</string>
        </property>
       </widget>
      </item>

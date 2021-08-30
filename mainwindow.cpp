@@ -39,6 +39,11 @@ MainWindow::MainWindow(QWidget *parent) :
                 file_count = cur_num + 1;
         }
     }
+
+    exit_win.setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    exit_win.hide();
+    connect(&exit_win, SIGNAL(sendCancelBtnEvent()), this, SLOT(cancelExit()));
+    connect(&exit_win, SIGNAL(sendConfirmBtnEvent()), this, SLOT(Exit()));
 }
 
 MainWindow::~MainWindow()
@@ -49,15 +54,16 @@ MainWindow::~MainWindow()
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if(!key_press) {
-        if (event->key() == 16777220) {
+        if (event->key() == 16777220) {     // Enter key - ↵
             ui->pushButton->animateClick();
             key_press = true;
             key_timer.start();
         }
-#ifdef DESKTOP
-        else if (event->key() == Qt::Key_Escape)
-            QApplication::quit();
-#endif
+        else if (event->key() == 16777216)// Close key - X
+        {
+            exit_win.show();
+            hide();
+        }
     }
 }
 
@@ -65,7 +71,7 @@ void MainWindow::onClick()
 {
     if(!start){
         ui->RecLbl->setText(QString::fromUtf8("ЗАПИСЬ ИДЁТ"));
-        ui->pushButton->setText(QString::fromUtf8("СТОП"));
+        ui->pushButton->setText(QString::fromUtf8("СТОП ↵"));
         count = 0;
         ui->TimerLbl->setText("00:00:00:000");
         file_name = "mems_" + QString::number(file_count++) + ".log";
@@ -90,7 +96,7 @@ void MainWindow::onClick()
         start = true;
     } else {
         ui->RecLbl->setText(QString::fromUtf8("ЗАПИСЬ НЕ ИДЁТ"));
-        ui->pushButton->setText(QString::fromUtf8("СТАРТ"));
+        ui->pushButton->setText(QString::fromUtf8("СТАРТ ↵"));
 #ifndef DESKTOP
         QString cmd = "dbus-send --session --print-reply --dest=sn.ornap.nvsd /navsensor sn.ornap.nvsd.NavSensor.Compass.LogControl string:'off' string:'" + file_name + "'";
 
@@ -175,4 +181,23 @@ void MainWindow::updateSizeInfo(void)
         ui->FileSizeLbl->setText(QString::fromUtf8("недоступно"));
     }
 #endif
+}
+
+void MainWindow::cancelExit()
+{
+    show();
+    exit_win.hide();
+}
+
+void MainWindow::Exit()
+{
+    ui->pushButton->animateClick();
+    Delay::msleep(100);
+#ifndef DESKTOP
+    QString cmd = "poweroff &";
+    QByteArray cmd_array = cmd.toLocal8Bit();
+    const char *c_str_cmd = cmd_array.data();
+    system(c_str_cmd);
+#endif
+    QApplication::quit();
 }

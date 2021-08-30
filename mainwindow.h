@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QThread>
+#include "exitwindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -33,6 +34,7 @@ private:
     QString file_name;
     bool start;
     bool key_press;
+    ExitWindow exit_win;
 
     void keyPressEvent(QKeyEvent *event);
     void updateTime(unsigned long long time_ms);
@@ -43,6 +45,8 @@ private slots:
     void onTimer();
     void onKeyTimeout();
     void updateChargeLevel();
+    void cancelExit();
+    void Exit();
 };
 
 #endif // MAINWINDOW_H

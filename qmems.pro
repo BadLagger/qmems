@@ -25,13 +25,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        exitwindow.cpp \
         main.cpp \
         mainwindow.cpp
 
 HEADERS += \
+        exitwindow.h \
         mainwindow.h
 
 FORMS += \
+        exitwindow.ui \
         mainwindow.ui
 
 CONFIG(buildroot) {
